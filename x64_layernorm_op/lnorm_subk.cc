@@ -5,6 +5,9 @@
 
 #include "layernorm.h"
 
+//
+// algo: single pass with sub a constant
+//
 void LNORMOp::DoForwardSubK(float *output, const float *input, int batch_size, int seq_len) {
 
   constexpr int kPack = 8;
@@ -42,18 +45,22 @@ void LNORMOp::DoForwardSubK(float *output, const float *input, int batch_size, i
   for(int i = 0, lm = limit, lm_dim = limit_dim; i < data_len;) {
     int j, boundary = i + seq_x_dim;
 
-    // compute mean, mea nsq
+    // compute mean, meansq
+    int bias = input[j];                      // chose the first element as bias
     __m256 sum_v = _mm256_setzero_ps();
     __m256 sumsq_v = _mm256_setzero_ps();
+    __m256 bias_v = _mm256_set1_ps(bias);
     for(j = i; j < lm; j += kPack) {
       __m256 v = _mm256_loadu_ps(input + j);
       sum_v = _mm256_add_ps(sum_v, v);
+      v = _mm256_sub_ps(v, bias_v);
       sumsq_v = _mm256_fmadd_ps(v, v, sumsq_v);
     }
 
     if(j < boundary) {
       __m256 v = _mm256_maskload_ps(input + j, mask_v);
       sum_v = _mm256_add_ps(sum_v, v);
+      v = _mm256_sub_ps(v, bias_v);
       sumsq_v = _mm256_fmadd_ps(v, v, sumsq_v);
     }
 
@@ -66,7 +73,8 @@ void LNORMOp::DoForwardSubK(float *output, const float *input, int batch_size, i
     }
 
     float mean = sum / seq_x_dim;
-    float std = std::sqrt(sumsq / seq_x_dim - mean * mean + 1e-5f);
+    int t = mean - bias;
+    float std = std::sqrt(sumsq / seq_x_dim - t * t + 1e-5f);
 
     __m256 mean_v = _mm256_set1_ps(mean);
     __m256 std_v = _mm256_set1_ps(std);

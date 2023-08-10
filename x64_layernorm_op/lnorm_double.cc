@@ -5,6 +5,9 @@
 
 #include "layernorm.h"
 
+//
+// algo: single pass with double precision
+//
 void LNORMOp::DoForwardDouble(float *output, const float *input, int batch_size, int seq_len) {
 
   constexpr int kPack = 8;

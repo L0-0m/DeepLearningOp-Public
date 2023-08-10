@@ -25,9 +25,9 @@ CPU:        Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
 
 * 算法选择
     - `naive`: two pass 算法，先求均值再求方差，数值稳定性好。[参考wiki](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance)
-    - default: single pass 算法，直接一次遍历求出均值和方差，数值稳定性在极少数情况不稳定。
-    - double:  高精度版的 single pass 算法，避免float类型数的大数吃小数问题，精度很高，数值稳定。[详见](https://en.wikipedia.org/wiki/Catastrophic_cancellation)
-    - **subk**: 根据均值不变性，改良的single pass算法，在保证default算法速度的情况下，保证了数值稳定性。
+    - `default`: single pass 算法，直接一次遍历求出均值和方差，数值稳定性在极少数情况不稳定。
+    - `double`:  高精度版的 single pass 算法，避免float类型数的大数吃小数问题，精度很高，数值稳定。[详见](https://en.wikipedia.org/wiki/Catastrophic_cancellation)
+    - **`subk`**: 根据均值不变性，改良的single pass算法，在保证default算法速度的情况下，保证了数值稳定性。
 
 * 优化点
     - `switch`语句设定mask，减少分支跳转。
